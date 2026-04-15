@@ -30,6 +30,7 @@ Esta atividade prática consiste em uma API desenvolvida em Django Rest Framewor
 5. Instale as dependências: 'pip install -r requirements.txt'
 6. Execute as migrações: 'python manage.py migrate'
 7. Inicie o servidor: 'python manage.py runserver'
+8. Para acessar painel do admin o login e senha sao os mesmos: 'admin'
 
 ## Detalhes do Deploy na AWS
 
