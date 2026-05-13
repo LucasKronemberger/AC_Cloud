@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,12 +9,69 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4_@#$cul)!4rbqy4p!3(r#mjd7i_hiy%3l2iio*k72iayf-nxl'
+SECRET_KEY = 'django-insecure-dz1&98_p4p#6(s99i9pd_s179)b7fk41x(-*zf2oj&_74_4ky&'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Configuração de DEBUG - True para desenvolvimento
 DEBUG = True if os.getenv('DJANGO_DEBUG', 'True') == 'True' else False
 
-ALLOWED_HOSTS = []
+# Configuração do banco de dados
+
+# SQLite para desenvolvimento, preparado para RDS depois
+if DEBUG:
+        # MySQL para desenvolvimento local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYSQL_DATABASE', 'catalogo'),
+            'USER': os.getenv('MYSQL_USER', 'root'),
+            'PASSWORD': os.getenv('MYSQL_PASSWORD', '123456'),
+            'HOST': os.getenv('MYSQL_HOST', '127.0.0.1'),
+            'PORT': os.getenv('MYSQL_PORT', '3306'),
+        }
+    }
+else:
+    # Configuração preparada para RDS (será ativada depois)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('RDS_DB_NAME', 'ebdb'),
+            'USER': os.getenv('RDS_USERNAME', 'ebroot'),
+            'PASSWORD': os.getenv('RDS_PASSWORD', '12345678'),
+            'HOST': os.getenv('RDS_HOSTNAME', 'awseb-e-8xmbmtsq4n-stack-awsebrdsdatabase-mh9j7uilzjpl.c4nkukcg6ft3.us-east-1.rds.amazonaws.com'),
+            'PORT': os.getenv('RDS_PORT', '3306'),
+        }
+    }
+
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
+
+# Configuração de arquivos de mídia
+# SQLite não suporta S3, mas já preparamos o caminho
+if DEBUG:
+    # Armazenamento local para desenvolvimento
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    # Configuração preparada para S3 (será ativada depois)
+    USE_S3 = os.getenv('USE_S3', 'False') == 'True'
+    if USE_S3:
+        # Configurações S3 serão ativadas posteriormente
+        pass
+    else:
+        MEDIA_URL = '/media/'
+        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+ALLOWED_HOSTS = os.getenv(
+    'DJANGO_ALLOWED_HOSTS',
+    'localhost,127.0.0.1,.elasticbeanstalk.com,testserver',
+).split(',')
 
 
 # Application definition
@@ -26,8 +83,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'produtos',
     'rest_framework',
+    'produtos',
 ]
 
 MIDDLEWARE = [
@@ -59,35 +116,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'catalogo.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-if DEBUG:
-    # Armazenamento local para desenvolvimento
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-else:
-    # Configuração preparada para S3 (será ativada depois)
-    USE_S3 = os.getenv('USE_S3', 'False') == 'True'
-    if USE_S3:
-        # Configurações S3 serão ativadas posteriormente
-        pass
-    else:
-        MEDIA_URL = '/media/'
-        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-ALLOWED_HOSTS = os.getenv(
-    'DJANGO_ALLOWED_HOSTS',
-    'localhost,127.0.0.1,.elasticbeanstalk.com'
-).split(',')
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -123,5 +151,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').exists() else []
